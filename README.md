@@ -26,17 +26,42 @@ Inhalte ändert man in `data.js`, ohne die Logik anzufassen.
 
 ## Kapitel
 
-1. **Hero** — beide iPads in CSS-3D nebeneinander. Beim Scrollen drehen sie sich durch eine
-   feste Choreografie: Front → Kante (Dickenvergleich) → Rückseite → Front. Der Text wechselt
-   in vier Phasen mit.
+1. **Hero** — beide iPads als CSS-3D-Körper nebeneinander. Beim Scrollen drehen sie sich durch
+   eine feste Choreografie: Front → Profil → Rückseite → Front, begleitet von vier Textphasen.
 2. **Performance** — Rad zur Auswahl von sechs Aufgaben, Balkenvergleich, Dauerlastdiagramm,
    Leistung pro Watt.
 3. **Laufzeit** — zwei Räder (Helligkeit, Szenario) plus Schalter für dunkle Inhalte.
    Ergebnis in Stunden und Minuten, dazu eine Tabelle über alle Szenarien.
 4. **Laden** — Watt-Rad von 1 W bis 60 W, Ladekurve, vollständige Tabelle mit 16 Watt-Stufen,
    Schalter für „während des Ladens benutzen“.
-5. **Unterschiede** — 46 Merkmale, filterbar nach Kategorie, Gemeinsamkeiten ausblendbar.
+5. **Unterschiede** — 48 Merkmale, filterbar nach Kategorie, Gemeinsamkeiten ausblendbar.
 6. **Empfehlung** — neun Gewichtungsregler ergeben eine personalisierte Kaufempfehlung.
+
+## Die 3D-Geräte
+
+Kein Rechteck mit aufgemalter Kamera, sondern ein Körper mit Volumen:
+
+- **Umlaufender Rand** aus vier geraden Kanten und je fünf Segmenten pro Ecke, in `buildRim()`
+  erzeugt. Jedes Segment wird nach seinem Winkel schattiert, sodass das Aluminium eine
+  durchgehende Lichtkante bekommt statt harter Facetten.
+- **Erhabenes Kameramodul** mit vier Seitenwänden und Deckfläche — es steht sichtbar über der
+  Rückseite, nicht darauf gedruckt.
+- **Details auf den Kanten**: Ein-/Aus-Taste, Lautstärketasten, USB-C-Anschluss,
+  Lautsprechergitter und der magnetische Streifen für den Apple Pencil.
+- **Bauhöhe im echten Verhältnis** (6,1 : 5,3 mm). Nur im Profilmoment wird sie um maximal
+  Faktor 3,6 überhöht, weil der Unterschied sonst unter zwei Pixeln läge; das Verhältnis
+  bleibt dabei exakt erhalten und beide Werte stehen als Beschriftung darunter.
+- **Perspektivausgleich**: Ein Gerät links der Perspektivachse zeigt bei gleichem Drehwinkel
+  mehr Fläche als eines rechts davon. Im Profil wird diese Scherung herausgerechnet — sonst
+  wirkte das linke Gerät systematisch dicker als es ist.
+- **Glanz und Spiegelung** auf Deckglas und Rückseite folgen dem Drehwinkel.
+
+## Scroll-Effekte
+
+Gepinnte 3D-Bühne im Hero; Parallaxe auf den Kapitelköpfen; Kacheln, Karten und Tabellen
+laufen gestaffelt ein; Zähler zählen hoch; die Diagrammlinien zeichnen sich beim Erreichen
+selbst; Balken und Anzeigen wachsen erst, wenn ihr Abschnitt sichtbar wird; eine
+Vergleichsleiste schwebt nach dem Hero ein und an der Fußzeile wieder aus.
 
 ## Bedienung der Räder
 
@@ -55,19 +80,30 @@ dunklen Bildinhalten deutlich weniger zieht — daher der Schalter für dunkle I
 Kalibriert ist das Modell auf Apples Referenzwert von 10 Stunden Websurfen bei 40 % Helligkeit.
 
 **Laden** — die zugeführte Leistung wird auf die maximale Aufnahme des Geräts begrenzt
-(≈ 30 W beim Air, ≈ 38 W beim Pro), um Wandlerverluste (15 %) und Standby-Verbrauch
-reduziert und in zwei Phasen umgesetzt: konstante Leistung bis 80 %, danach ein exponentiell
-auslaufender Ladeschluss. Deshalb bringt oberhalb von 38 W kein Netzteil mehr etwas, und
-deshalb lädt bei 1 W mit gleichzeitiger Nutzung gar nichts mehr.
+(20 W beim Air laut Herstellerangabe, ≈ 38 W beim Pro), um Wandlerverluste (15 %) und
+Standby-Verbrauch reduziert und in zwei Phasen umgesetzt: konstante Leistung bis 80 %, danach
+ein exponentiell auslaufender Ladeschluss. Kontrollpunkt: Das Modell liefert für das Pro
+50 % in 29 Minuten an 60 W — die Herstellerangabe lautet „rund 30 Minuten“. Daraus folgen
+auch die beiden Randfälle: Oberhalb von 20 W wird das Air nicht schneller, und bei 1 W mit
+gleichzeitiger Nutzung lädt gar nichts mehr.
 
 ## Datengrundlage
 
-Das **iPad Pro 11″ (2025)** ist mit M5 und Tandem-OLED dokumentiert.
+Beide Geräte sind im Handel:
 
-Zum **iPad Air 11″ (2026)** liegen keine offiziellen Spezifikationen vor. Alle Air-Werte sind
-Prognosen auf Basis der M4-Generation und in der Vergleichstabelle mit dem Kennzeichen
-*Prognose* markiert. Benchmark-, Laufzeit- und Ladewerte sind repräsentative Modellrechnungen,
-keine Labormessungen. Preise sind Richtwerte.
+- **iPad Air 11″ (M4)** — vorgestellt am 2. März 2026, seit dem 11. März 2026 erhältlich.
+  M4 mit 8 CPU- und 9 GPU-Kernen, 12 GB Arbeitsspeicher, Wi-Fi 7 über den N1-Chip,
+  C1X-Modem, 28,93 Wh, 20 W Ladeleistung, 464 g, ab 799 €.
+- **iPad Pro 11″ (M5)** — seit dem 22. Oktober 2025 erhältlich. M5 mit 10 CPU- und
+  10 GPU-Kernen, 12 GB (16 GB ab 1 TB), Tandem-OLED, Thunderbolt, 31,29 Wh, Schnellladen
+  bis 60 W, 444 g, ab 1.099 €.
+
+Zwei frühere Pro-Vorteile sind damit weggefallen: Arbeitsspeicher und Funkausstattung sind
+inzwischen gleichauf.
+
+Spezifikationen stammen aus den Herstellerangaben. **Benchmark-, Laufzeit- und Ladewerte sind
+Modellrechnungen** und mit „≈“ gekennzeichnet — Orientierung, keine Labormessung. Preise sind
+Listenpreise für Deutschland; im Handel liegen sie häufig darunter.
 
 Apple, iPad, iPad Air und iPad Pro sind Marken von Apple Inc. Dieses Projekt steht in keiner
 Verbindung zu Apple Inc.

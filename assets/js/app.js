@@ -215,10 +215,85 @@ class Dial {
   }
 }
 
+
+/* =====================================================================
+   Gerätekörper — umlaufender Rand
+   Vier gerade Kanten plus je fünf Segmente pro Ecke ergeben eine
+   gerundete Silhouette. Jedes Segment wird nach seinem Winkel
+   schattiert, damit das Aluminium im Profil eine Lichtkante bekommt.
+   ===================================================================== */
+const RIM_N = 5;                                   // Segmente je Ecke
+const RIM_ARC = (Math.PI / 2 / RIM_N * 1.45).toFixed(4);
+
+function rimShade(deg, vertical) {
+  const lit = 0.5 + 0.5 * Math.cos((deg + 34) * Math.PI / 180);
+  const hi = (lit * 0.40).toFixed(3), sh = ((1 - lit) * 0.46).toFixed(3);
+  const dir = vertical ? '90deg,' : '';
+  return `linear-gradient(${dir}rgba(255,255,255,${hi}),rgba(0,0,0,${sh})),` +
+         `linear-gradient(${dir}var(--alu1),var(--alu2) 28%,var(--alu3) 68%,var(--alu4))`;
+}
+
+function buildRim(device, kind) {
+  const frag = document.createDocumentFragment();
+  const seg = (cls, w, h, tf, deg, vertical) => {
+    const e = document.createElement('div');
+    e.className = 'rim-seg' + (cls ? ' ' + cls : '');
+    e.style.width = w; e.style.height = h; e.style.transform = tf;
+    e.style.backgroundImage = rimShade(deg, vertical);
+    frag.appendChild(e);
+    return e;
+  };
+
+  const LONG_W = 'calc(var(--w) - var(--r) * 2)';
+  const LONG_H = 'calc(var(--h) - var(--r) * 2)';
+
+  /* Gerade Kanten */
+  const top = seg('rim-top', LONG_W, 'var(--d)',
+    'translate(-50%,-50%) rotateX(90deg) translateZ(calc(var(--h)/2))', 0, false);
+  const bottom = seg('rim-bottom', LONG_W, 'var(--d)',
+    'translate(-50%,-50%) rotateX(-90deg) translateZ(calc(var(--h)/2))', 180, false);
+  const left = seg('rim-left', 'var(--d)', LONG_H,
+    'translate(-50%,-50%) rotateY(-90deg) translateZ(calc(var(--w)/2))', 270, true);
+  const right = seg('rim-right', 'var(--d)', LONG_H,
+    'translate(-50%,-50%) rotateY(90deg) translateZ(calc(var(--w)/2))', 90, true);
+
+  /* Ecken: Viertelkreis aus flachen Segmenten */
+  const corners = [[0, 1, -1], [90, 1, 1], [180, -1, 1], [270, -1, -1]];
+  corners.forEach(([a0, sx, sy]) => {
+    const cx = `calc((var(--w)/2 - var(--r)) * ${sx})`;
+    const cy = `calc((var(--h)/2 - var(--r)) * ${sy})`;
+    for (let i = 0; i < RIM_N; i++) {
+      const th = a0 + (i + 0.5) * 90 / RIM_N;
+      seg('', `calc(var(--r) * ${RIM_ARC})`, 'var(--d)',
+        `translate(-50%,-50%) translate(${cx},${cy}) rotateZ(${th.toFixed(2)}deg) ` +
+        `rotateX(90deg) translateZ(var(--r))`, th, false);
+    }
+  });
+
+  /* Tasten, Anschluss und Lautsprecher */
+  const detail = (host, cls) => {
+    const e = document.createElement('span');
+    e.className = 'rim-detail ' + cls;
+    host.appendChild(e);
+  };
+  detail(top, 'btn-power');
+  detail(top, 'grille grille--l');
+  detail(top, 'grille grille--r');
+  detail(right, 'btn-vol btn-vol--a');
+  detail(right, 'btn-vol btn-vol--b');
+  detail(bottom, 'port');
+  detail(bottom, 'grille grille--l');
+  detail(bottom, 'grille grille--r');
+  detail(left, 'pencil');
+  if (kind === 'air') { top.querySelector('.btn-power').classList.add('has-touchid'); }
+
+  device.appendChild(frag);
+}
+
 /* =====================================================================
    KAPITEL 02 — Performance
    ===================================================================== */
-const perfState = { i: 1 };
+const perfState = { i: 1, armed: false };
 
 function perfValue(load, dev) {
   const v = load[dev];
@@ -233,8 +308,8 @@ function renderPerf() {
   /* Balkenlänge bildet immer den echten Messwert ab — bei Zeiten heißt
      „länger“ deshalb „langsamer“. Die Skalenzeile darüber sagt, was gilt. */
   const mx = Math.max(L.air, L.pro);
-  $('.bar__fill--air').style.width = (26 + 74 * (L.air / mx)) + '%';
-  $('.bar__fill--pro').style.width = (26 + 74 * (L.pro / mx)) + '%';
+  $('.bar__fill--air').style.width = perfState.armed ? (26 + 74 * (L.air / mx)) + '%' : '0%';
+  $('.bar__fill--pro').style.width = perfState.armed ? (26 + 74 * (L.pro / mx)) + '%' : '0%';
   $('#perfScale').textContent = L.dir === 'up'
     ? `Gemessen in ${L.unit} — mehr ist besser.`
     : `Gemessen als benötigte Zeit — weniger ist besser.`;
@@ -314,13 +389,38 @@ function drawSustain() {
     }
     svg.appendChild(svgEl('path', { class: 'ch-line ch-line--' + k, d }));
   });
+  armDraw(svg);
+}
+
+/* Linien zeichnen sich beim Hereinscrollen selbst */
+function armDraw(svg) {
+  /* Nach dem einmaligen Einzeichnen nicht erneut animieren — sonst
+     zuckt die Ladekurve bei jeder Radbewegung neu los. */
+  if (REDUCED || svg.dataset.drawnDone) return;
+  $$('.ch-line', svg).forEach(pth => {
+    const len = Math.ceil(pth.getTotalLength());
+    if (!len) return;
+    pth.classList.add('draw');
+    pth.style.setProperty('--len', len);
+  });
+  if (svg.dataset.drawObserved) return;
+  svg.dataset.drawObserved = '1';
+  if (!('IntersectionObserver' in window)) { $$('.ch-line', svg).forEach(p => p.classList.add('is-drawn')); return; }
+  new IntersectionObserver((es, io) => {
+    es.forEach(e => {
+      if (!e.isIntersecting) return;
+      $$('.ch-line', svg).forEach(p => requestAnimationFrame(() => p.classList.add('is-drawn')));
+      svg.dataset.drawnDone = '1';
+      io.disconnect();
+    });
+  }, { threshold: 0.25 }).observe(svg);
 }
 
 /* =====================================================================
    KAPITEL 03 — Laufzeit
    ===================================================================== */
 const USE_SHORT = { read: 'Lesen', web: 'Web & Mail', video: 'Video HDR', edit: 'Schnitt', game: 'Gaming', ai: 'KI lokal' };
-const rtState = { bright: 40, use: 1, dark: false };
+const rtState = { bright: 40, use: 1, dark: false, armed: false };
 
 /* Leistungsaufnahme in Watt */
 function drawPower(dev, load, bright01, dark) {
@@ -343,8 +443,8 @@ function renderRuntime() {
   $('#rtPro').innerHTML = fmtHoursRich(rp);
   $('#rtAirMin').textContent = fmtMinutes(ra);
   $('#rtProMin').textContent = fmtMinutes(rp);
-  $('#rtAirBar').style.width = (ra / mx * 100) + '%';
-  $('#rtProBar').style.width = (rp / mx * 100) + '%';
+  $('#rtAirBar').style.width = rtState.armed ? (ra / mx * 100) + '%' : '0%';
+  $('#rtProBar').style.width = rtState.armed ? (rp / mx * 100) + '%' : '0%';
   $('#rtAirDraw').textContent = 'Leistungsaufnahme ≈ ' + nf(drawPower(DEV.air, L, b, dark), 2) + ' W · '
     + Math.round(DEV.air.display.maxNits * b) + ' Nits';
   $('#rtProDraw').textContent = 'Leistungsaufnahme ≈ ' + nf(drawPower(DEV.pro, L, b, dark), 2) + ' W · '
@@ -373,6 +473,7 @@ function renderRuntime() {
     const d = Math.round((Math.max(a, p) / Math.min(a, p) - 1) * 100);
     const tr = document.createElement('tr');
     if (i === rtState.use) tr.className = 'is-active';
+    tr.style.setProperty('--i', Math.min(i, 12));
     tr.innerHTML =
       `<td>${l.label}</td>` +
       `<td class="${a > p ? 'win' : ''}">${fmtHours(a)}</td>` +
@@ -534,6 +635,8 @@ function drawChargeChart(ma, mp) {
     note.textContent = 'Keine Ladekurve — der Verbrauch übersteigt die zugeführte Leistung.';
     svg.appendChild(note);
   }
+
+  armDraw(svg);
 }
 
 function ratePill(h) {
@@ -569,6 +672,7 @@ function initCharge() {
     const ma = chargeModel(DEV.air, w, false), mp = chargeModel(DEV.pro, w, false);
     const tr = document.createElement('tr');
     tr.dataset.w = w;
+    tr.style.setProperty('--i', Math.min(WATT_STEPS.indexOf(w), 12));
     tr.innerHTML =
       `<td>${w % 1 ? nf(w, 1) : w} W</td>` +
       `<td class="${ma.ok && mp.ok && ma.t100 < mp.t100 ? 'win' : ''}">${fmtHours(ma.t100)}${ma.capped ? ' <span class="muted">(gedeckelt)</span>' : ''}</td>` +
@@ -595,9 +699,10 @@ function renderDiffs() {
     (diffState.cat === 'Alle' || d.cat === diffState.cat) &&
     (!diffState.only || d.win !== 'tie')
   );
-  rows.forEach(d => {
+  rows.forEach((d, i) => {
     const row = document.createElement('div');
     row.className = 'diffrow';
+    row.style.setProperty('--i', Math.min(i, 14));
     const badge = d.proj ? ' <span class="proj-badge">Prognose</span>' : '';
     row.innerHTML =
       `<div class="diffrow__k">${d.k}<span class="diffrow__cat">${d.cat}</span></div>` +
@@ -710,12 +815,26 @@ function initHero() {
   const devs   = { air: rigs.air.querySelector('.device'), pro: rigs.pro.querySelector('.device') };
   const blobs  = $$('.blob');
 
+  /* Gerätekörper aufbauen */
+  buildRim(devs.air, 'air');
+  buildRim(devs.pro, 'pro');
+
   const pointer = { x: 0, y: 0, tx: 0, ty: 0 };
   if (!REDUCED && window.matchMedia('(pointer:fine)').matches) {
     window.addEventListener('pointermove', e => {
       pointer.tx = (e.clientX / window.innerWidth - .5) * 2;
       pointer.ty = (e.clientY / window.innerHeight - .5) * 2;
     }, { passive: true });
+  }
+
+  /* Layout-Mitte beider Geräte relativ zur Perspektivachse.
+     Nötig, um im Profil die Perspektiven-Scherung auszugleichen. */
+  const PERSP = 1500;
+  let dxA = 0, dxP = 0;
+  function measureLayout() {
+    const half = inner.offsetWidth / 2;
+    dxA = rigs.air.offsetLeft + rigs.air.offsetWidth / 2 - half;
+    dxP = rigs.pro.offsetLeft + rigs.pro.offsetWidth / 2 - half;
   }
 
   let p = 0;
@@ -727,7 +846,7 @@ function initHero() {
   }
 
   function paint() {
-    /* Drehung: Front → Kante (Dickenvergleich) → Rückseite → Front */
+    /* Drehung: Front → Profil → Rückseite → Front */
     const rot = seq(p, [
       [0.00,   0], [0.14,   0],
       [0.30,  90], [0.40,  90],
@@ -736,27 +855,44 @@ function initHero() {
     ]);
     const tilt   = seq(p, [[0, 5], [0.2, -2], [0.6, 3], [1, 0]]);
     const spread = seq(p, [[0, 0.90], [0.24, 1], [0.84, 1], [1, 1.26]]);
-    const scale  = seq(p, [[0, 0.98], [0.3, 1], [0.84, 1], [1, 0.93]]);
+    const scale  = seq(p, [[0, 0.98], [0.30, 1.10], [0.42, 1.10], [0.56, 1], [0.84, 1], [1, 0.93]]);
     const lift   = seq(p, [[0, 16], [0.25, 0], [1, -8]]);
 
-    /* Steht das Gerät hochkant zum Betrachter, wird die Bauhöhe überhöht,
-       damit der Dickenunterschied überhaupt sichtbar wird. Das Verhältnis
-       6,1 : 5,3 bleibt dabei erhalten. */
+    /* Steht das Gerät im Profil, wird die Bauhöhe leicht überhöht.
+       Faktor maximal 3,6 — die Geräte bleiben erkennbar flach, und das
+       Verhältnis 6,1 : 5,3 mm bleibt exakt erhalten. */
     const edge  = Math.abs(Math.sin(rot * Math.PI / 180));
-    const boost = 1 + 6.2 * Math.pow(edge, 4);
-    rigs.air.style.setProperty('--dboost', boost.toFixed(3));
-    rigs.pro.style.setProperty('--dboost', boost.toFixed(3));
+    const boost = 1 + 2.6 * Math.pow(edge, 4);
 
     pointer.x += (pointer.tx - pointer.x) * 0.07;
     pointer.y += (pointer.ty - pointer.y) * 0.07;
 
     const gap = window.innerWidth < 700 ? 42 : 140;
     const off = gap * (spread - 1);
+    const yaw = pointer.x * 5;
 
-    rigs.air.style.transform = `translate3d(${-off}px,${lift}px,0) scale(${scale})`;
-    rigs.pro.style.transform = `translate3d(${off}px,${lift}px,0) scale(${scale})`;
-    devs.air.style.transform = `rotateX(${tilt + pointer.y * -3}deg) rotateY(${rot + 17 + pointer.x * 5}deg) rotateZ(${-1.5 + p * 1.5}deg)`;
-    devs.pro.style.transform = `rotateX(${tilt + pointer.y * -3}deg) rotateY(${rot - 17 + pointer.x * 5}deg) rotateZ(${1.5 - p * 1.5}deg)`;
+    /* Im Profil laufen beide Basiswinkel auf denselben Wert zu — nur so
+       zeigen beide Geräte dieselbe Seite und sind vergleichbar. */
+    const conv = Math.pow(edge, 3);
+    [['air', -1, 17, dxA], ['pro', 1, -17, dxP]].forEach(([k, dir, base0, dx0]) => {
+      const base = lerp(base0, -9, conv);
+      const rig = rigs[k];
+      rig.style.setProperty('--dboost', boost.toFixed(3));
+
+      /* Ein Gerät links der Perspektivachse zeigt bei gleichem Drehwinkel
+         mehr Fläche als eines rechts davon. Im Profil wird diese Scherung
+         herausgerechnet, sonst wirkt das linke Gerät systematisch dicker. */
+      const shear = Math.atan2(dx0 + dir * off, PERSP) * 180 / Math.PI;
+      const ry = rot + base + yaw - shear * conv;
+
+      /* Glanzlage folgt der Drehung, damit Glas und Aluminium leben */
+      rig.style.setProperty('--spec', (0.5 + 0.5 * Math.sin(ry * Math.PI / 180)).toFixed(3));
+      rig.style.transform = `translate3d(${dir * off}px,${lift}px,0) scale(${scale})`;
+      devs[k].style.transform =
+        `rotateX(${tilt + pointer.y * -3}deg) ` +
+        `rotateY(${ry}deg) ` +
+        `rotateZ(${dir * (1.5 - p * 1.5)}deg)`;
+    });
 
     blobs.forEach((b, i) => {
       const s = (i + 1) * 26;
@@ -768,6 +904,7 @@ function initHero() {
     phases.forEach((el, i) => el.classList.toggle('is-active', i === active));
 
     stage.classList.toggle('show-tags', p > 0.84);
+    stage.classList.toggle('show-mm', edge > 0.9);
     hint.classList.toggle('is-gone', p > 0.03);
   }
 
@@ -778,6 +915,9 @@ function initHero() {
     stage.classList.add('show-tags');
     return;
   }
+
+  measureLayout();
+  window.addEventListener('resize', measureLayout);
 
   /* Nur zeichnen, solange die Bühne sichtbar ist */
   (function loop() {
@@ -852,6 +992,59 @@ function initNav() {
   }
 }
 
+
+/* =====================================================================
+   Scroll-Effekte über die gesamte Seite
+   Ein einziger rAF-gedrosselter Handler für Parallaxe, Vergleichsleiste
+   und Fortschritt — kein zweiter Scroll-Listener pro Effekt.
+   ===================================================================== */
+function initScrollFX() {
+  const bar   = $('#compbar');
+  const hero  = $('#hero');
+  const foot  = $('.foot');
+  const pars  = $$('[data-par]').map(el => ({ el, f: parseFloat(el.dataset.par) || 0.1 }));
+  let ticking = false;
+
+  function frame() {
+    ticking = false;
+    const vh = window.innerHeight, mid = vh / 2;
+
+    /* Kapitelköpfe wandern langsamer als die Seite */
+    if (!REDUCED) {
+      pars.forEach(({ el, f }) => {
+        const r = el.getBoundingClientRect();
+        if (r.bottom < -200 || r.top > vh + 200) return;
+        const off = (mid - (r.top + r.height / 2)) * f;
+        el.style.transform = `translate3d(0,${off.toFixed(1)}px,0)`;
+      });
+    }
+
+    /* Vergleichsleiste zwischen Hero und Fußzeile */
+    if (bar) {
+      const afterHero = hero.getBoundingClientRect().bottom < 120;
+      const beforeFoot = foot.getBoundingClientRect().top > vh * 0.92;
+      bar.classList.toggle('is-on', afterHero && beforeFoot);
+    }
+  }
+
+  function onScroll() { if (!ticking) { ticking = true; requestAnimationFrame(frame); } }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+  frame();
+
+  /* Balken erst füllen, wenn ihr Abschnitt erreicht ist */
+  const arm = (sel, fn) => {
+    const el = $(sel);
+    if (!el || !('IntersectionObserver' in window)) { fn(); return; }
+    const io = new IntersectionObserver(es => {
+      es.forEach(e => { if (e.isIntersecting) { fn(); io.disconnect(); } });
+    }, { threshold: 0.2 });
+    io.observe(el);
+  };
+  arm('#performance', () => { perfState.armed = true; renderPerf(); });
+  arm('#laufzeit',    () => { rtState.armed = true;   renderRuntime(); });
+}
+
 /* ------------------------------ Start ------------------------------ */
 function boot() {
   initHero();
@@ -863,6 +1056,7 @@ function boot() {
   initReveal();
   initCounters();
   initNav();
+  initScrollFX();
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
 else boot();

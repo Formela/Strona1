@@ -34,6 +34,14 @@
   <div class="nav__progress"><i id="navProgress"></i></div>
 </header>
 
+<div class="compbar" id="compbar" aria-hidden="true">
+  <div class="compbar__in">
+    <span class="compbar__dev"><i class="dot dot--air"></i><b>iPad Air 11″</b><span>M4 · ab 799 €</span></span>
+    <span class="compbar__vs">gegen</span>
+    <span class="compbar__dev"><i class="dot dot--pro"></i><b>iPad Pro 11″</b><span>M5 · ab 1.099 €</span></span>
+  </div>
+</div>
+
 <main id="top">
 
 <!-- ============================== HERO / 3D ============================== -->
@@ -75,9 +83,9 @@
 
           <!-- ============ iPad Air ============ -->
           <div class="rig" data-rig="air">
-            <div class="device">
+            <div class="device" data-device>
               <div class="face face--front">
-                <div class="screen screen--lcd">
+                <div class="screen">
                   <div class="wallpaper wallpaper--air"></div>
                   <div class="screen__ui">
                     <div class="ui-status"><span>9:41</span><span class="ui-dots"><i></i><i></i><i></i></span></div>
@@ -88,52 +96,67 @@
                     </div>
                     <div class="ui-dock"><i></i><i></i><i></i><i></i><i></i></div>
                   </div>
-                  <div class="screen__glare"></div>
+                  <span class="screen__vignette"></span>
+                </div>
+                <span class="frontcam"></span>
+                <span class="glass"></span>
+              </div>
+
+              <div class="face face--back back--air">
+                <span class="alu-sheen"></span>
+                <svg class="blogo" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.088-4.61 1.088zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"/></svg>
+                
+                <div class="bump bump--air">
+                  <span class="bump-wall bw-t"></span>
+                  <span class="bump-wall bw-b"></span>
+                  <span class="bump-wall bw-l"></span>
+                  <span class="bump-wall bw-r"></span>
+                  <span class="bump-top"><i class="lens"></i></span>
                 </div>
               </div>
-              <div class="face face--back back--air">
-                <div class="cam cam--single"><span class="lens"></span></div>
-                <svg class="blogo" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.088-4.61 1.088zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"/></svg>
-              </div>
-              <div class="face edge edge--l"></div>
-              <div class="face edge edge--r"></div>
-              <div class="face edge edge--t"></div>
-              <div class="face edge edge--b"></div>
             </div>
             <div class="rig__shadow"></div>
             <div class="rig__tag"><b>iPad Air 11″</b><span>2026 · M4</span></div>
+            <div class="rig__mm"><b>6,1 mm</b><span>Bauhöhe</span></div>
           </div>
 
           <!-- ============ iPad Pro ============ -->
           <div class="rig" data-rig="pro">
-            <div class="device">
+            <div class="device" data-device>
               <div class="face face--front">
-                <div class="screen screen--oled">
+                <div class="screen">
                   <div class="wallpaper wallpaper--pro"></div>
                   <div class="screen__ui">
                     <div class="ui-status"><span>9:41</span><span class="ui-dots"><i></i><i></i><i></i></span></div>
                     <div class="ui-hero">
-                      <div class="ui-badge ui-badge--pro">iPad Pro</div>
+                      <div class="ui-badge">iPad Pro</div>
                       <div class="ui-title">M5</div>
                       <div class="ui-sub">Ultra Retina XDR · 120 Hz</div>
                     </div>
                     <div class="ui-dock"><i></i><i></i><i></i><i></i><i></i></div>
                   </div>
-                  <div class="screen__glare"></div>
+                  <span class="screen__vignette"></span>
                 </div>
+                <span class="frontcam"></span>
+                <span class="glass"></span>
               </div>
+
               <div class="face face--back back--pro">
-                <div class="cam cam--pro"><span class="lens"></span><span class="lidar"></span><span class="flash"></span></div>
+                <span class="alu-sheen"></span>
                 <svg class="blogo" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.088-4.61 1.088zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"/></svg>
                 <span class="antenna"></span>
+                <div class="bump bump--pro">
+                  <span class="bump-wall bw-t"></span>
+                  <span class="bump-wall bw-b"></span>
+                  <span class="bump-wall bw-l"></span>
+                  <span class="bump-wall bw-r"></span>
+                  <span class="bump-top"><i class="lens"></i><i class="lidar"></i><i class="flash"></i></span>
+                </div>
               </div>
-              <div class="face edge edge--l"></div>
-              <div class="face edge edge--r"></div>
-              <div class="face edge edge--t"></div>
-              <div class="face edge edge--b"></div>
             </div>
             <div class="rig__shadow"></div>
             <div class="rig__tag"><b>iPad Pro 11″</b><span>2025 · M5</span></div>
+            <div class="rig__mm"><b>5,3 mm</b><span>Bauhöhe</span></div>
           </div>
 
         </div>
@@ -151,7 +174,7 @@
 <!-- ============================== ÜBERBLICK ============================== -->
 <section class="section" id="ueberblick">
   <div class="wrap">
-    <header class="sec-head reveal">
+    <header class="sec-head reveal" data-par="0.13">
       <p class="eyebrow">Kapitel 01</p>
       <h2 class="h1">Auf einen Blick.</h2>
       <p class="sec-sub">Vier Zahlen, die den Charakter der beiden Geräte bestimmen — der Rest dieser Seite erklärt, was sie im Alltag bedeuten.</p>
@@ -160,13 +183,13 @@
     <div class="tiles">
       <article class="tile reveal">
         <p class="tile__k">Rechenleistung (Multi-Core)</p>
-        <p class="tile__v"><span class="count" data-to="26" data-suffix="&nbsp;%">0</span></p>
+        <p class="tile__v"><span class="count" data-to="25" data-suffix="&nbsp;%">0</span></p>
         <p class="tile__d">mehr Multi-Core-Leistung für das iPad Pro mit M5 gegenüber dem M4 im Air.</p>
       </article>
       <article class="tile reveal">
         <p class="tile__k">Grafik &amp; Raytracing</p>
-        <p class="tile__v"><span class="count" data-to="45" data-suffix="&nbsp;%">0</span></p>
-        <p class="tile__d">schnellere GPU dank Neural Accelerators in jedem Grafikkern.</p>
+        <p class="tile__v"><span class="count" data-to="56" data-suffix="&nbsp;%">0</span></p>
+        <p class="tile__d">schnellere Grafik: zehn M5-Kerne mit Neural Accelerators gegen neun im M4.</p>
       </article>
       <article class="tile reveal">
         <p class="tile__k">Akkukapazität</p>
@@ -175,14 +198,14 @@
       </article>
       <article class="tile reveal">
         <p class="tile__k">Preisunterschied</p>
-        <p class="tile__v"><span class="count" data-to="400" data-prefix="≈&nbsp;" data-suffix="&nbsp;€">0</span></p>
-        <p class="tile__d">Aufpreis für das iPad Pro in der Einstiegskonfiguration.</p>
+        <p class="tile__v"><span class="count" data-to="300" data-suffix="&nbsp;€">0</span></p>
+        <p class="tile__d">Aufpreis für das iPad Pro: 1.099 € gegenüber 799 € für das iPad Air.</p>
       </article>
     </div>
 
     <div class="notice reveal">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 2 21h20L12 2zm0 6 6.5 11.5h-13L12 8zm-1 3v4h2v-4h-2zm0 5v2h2v-2h-2z"/></svg>
-      <p><b>Datengrundlage.</b> Das iPad Pro 11″ (2025) ist offiziell dokumentiert (M5, Tandem-OLED). Für das iPad Air 11″ (2026) liegen keine offiziellen Spezifikationen vor — alle Air-Werte basieren auf der <b>M4-Generation</b> und sind im Vergleich mit dem Kennzeichen <span class="proj-badge">Prognose</span> markiert. Benchmark- und Laufzeitwerte sind repräsentative Modellrechnungen, keine Labormessungen.</p>
+      <p><b>Datengrundlage.</b> Beide Geräte sind im Handel: das iPad Air 11″ mit M4 seit dem 11.&nbsp;März&nbsp;2026, das iPad Pro 11″ mit M5 seit dem 22.&nbsp;Oktober&nbsp;2025. Alle Spezifikationen stammen aus den Herstellerangaben. <b>Benchmark-, Laufzeit- und Ladewerte sind Modellrechnungen</b> — sie sind mit „≈“ gekennzeichnet und dienen der Orientierung, nicht als Labormessung. Preise sind Listenpreise für Deutschland; im Handel liegen sie oft darunter.</p>
     </div>
   </div>
 </section>
@@ -190,7 +213,7 @@
 <!-- ============================== PERFORMANCE ============================== -->
 <section class="section section--alt" id="performance">
   <div class="wrap">
-    <header class="sec-head reveal">
+    <header class="sec-head reveal" data-par="0.13">
       <p class="eyebrow">Kapitel 02</p>
       <h2 class="h1">Performance.</h2>
       <p class="sec-sub">Dreh am Rad und wähle eine Aufgabe. Beide iPads erledigen sie — nur nicht gleich schnell.</p>
@@ -227,12 +250,12 @@
         <h3 class="card__h">Silizium im Detail</h3>
         <table class="mini">
           <tbody>
-            <tr><th>CPU</th><td>9 Kerne <span class="proj-badge">Prognose</span></td><td class="win">10 Kerne</td></tr>
-            <tr><th>GPU</th><td>10 Kerne</td><td class="win">10 Kerne + Neural&nbsp;Accelerators</td></tr>
-            <tr><th>Arbeitsspeicher</th><td>8 GB</td><td class="win">12 GB</td></tr>
+            <tr><th>CPU</th><td>8 Kerne</td><td class="win">10 Kerne</td></tr>
+            <tr><th>GPU</th><td>9 Kerne</td><td class="win">10 Kerne + Neural&nbsp;Accelerators</td></tr>
+            <tr><th>Arbeitsspeicher</th><td class="win">12 GB</td><td class="win">12 GB</td></tr>
             <tr><th>Speicherbandbreite</th><td>120 GB/s</td><td class="win">153 GB/s</td></tr>
             <tr><th>Single-Core</th><td>≈ 3.760</td><td class="win">≈ 4.130</td></tr>
-            <tr><th>Multi-Core</th><td>≈ 14.150</td><td class="win">≈ 17.850</td></tr>
+            <tr><th>Multi-Core</th><td>≈ 14.300</td><td class="win">≈ 17.850</td></tr>
           </tbody>
         </table>
         <p class="card__foot"><span class="dot dot--air"></span>iPad Air &nbsp;·&nbsp; <span class="dot dot--pro"></span>iPad Pro</p>
@@ -261,7 +284,7 @@
 <!-- ============================== AKKU: LAUFZEIT ============================== -->
 <section class="section" id="laufzeit">
   <div class="wrap">
-    <header class="sec-head reveal">
+    <header class="sec-head reveal" data-par="0.13">
       <p class="eyebrow">Kapitel 03</p>
       <h2 class="h1">Wie lange hält der Akku?</h2>
       <p class="sec-sub">Helligkeit, Aufgabe, Darstellung — stell alles selbst ein. Die Laufzeit rechnet sich live in Stunden und Minuten.</p>
@@ -316,7 +339,7 @@
 <!-- ============================== AKKU: LADEN ============================== -->
 <section class="section section--alt" id="laden">
   <div class="wrap">
-    <header class="sec-head reveal">
+    <header class="sec-head reveal" data-par="0.13">
       <p class="eyebrow">Kapitel 04</p>
       <h2 class="h1">Laden von 1 W bis 60 W.</h2>
       <p class="sec-sub">Dreh das Watt-Rad und sieh, wie sich die Ladezeit verändert — vom Notfall am Laptop-Port bis zum 60-W-Netzteil.</p>
@@ -340,7 +363,7 @@
       <div class="lab__out">
         <div class="chargecards">
           <article class="chargecard">
-            <header><span class="dot dot--air"></span><b>iPad Air 11″</b><span class="muted">max. ≈ 30 W</span></header>
+            <header><span class="dot dot--air"></span><b>iPad Air 11″</b><span class="muted">Ladeleistung 20 W</span></header>
             <p class="chargecard__big" id="chAir">—</p>
             <ul class="steps">
               <li><span>auf 50 %</span><b id="chAir50">—</b></li>
@@ -349,7 +372,7 @@
             </ul>
           </article>
           <article class="chargecard chargecard--pro">
-            <header><span class="dot dot--pro"></span><b>iPad Pro 11″</b><span class="muted">max. ≈ 38 W</span></header>
+            <header><span class="dot dot--pro"></span><b>iPad Pro 11″</b><span class="muted">Schnellladen bis 60 W</span></header>
             <p class="chargecard__big" id="chPro">—</p>
             <ul class="steps">
               <li><span>auf 50 %</span><b id="chPro50">—</b></li>
@@ -377,7 +400,7 @@
 <!-- ============================== UNTERSCHIEDE ============================== -->
 <section class="section" id="unterschiede">
   <div class="wrap">
-    <header class="sec-head reveal">
+    <header class="sec-head reveal" data-par="0.13">
       <p class="eyebrow">Kapitel 05</p>
       <h2 class="h1">Alle Unterschiede.</h2>
       <p class="sec-sub">Vollständig, filterbar, ohne Marketing. Grün markiert das jeweils stärkere Gerät.</p>
@@ -407,7 +430,7 @@
 <!-- ============================== FAZIT / RECHNER ============================== -->
 <section class="section section--alt" id="fazit">
   <div class="wrap">
-    <header class="sec-head reveal">
+    <header class="sec-head reveal" data-par="0.13">
       <p class="eyebrow">Kapitel 06</p>
       <h2 class="h1">Welches iPad passt zu dir?</h2>
       <p class="sec-sub">Gewichte, was dir wirklich wichtig ist. Die Empfehlung rechnet sich sofort neu.</p>
@@ -436,7 +459,7 @@
         <ul>
           <li>du Notizen, Studium, Office, Streaming und gelegentliches Zeichnen abdeckst.</li>
           <li>dir 60 Hz genügen und du keine HDR-Videos schneidest.</li>
-          <li>du rund 400 € lieber in Zubehör, Speicher oder gar nicht investierst.</li>
+          <li>du die 300 € lieber in Zubehör, mehr Speicher oder gar nicht investierst.</li>
           <li>dir die längere Laufzeit bei hellen Inhalten wichtiger ist als Ladetempo.</li>
         </ul>
       </article>
@@ -445,8 +468,8 @@
         <ul>
           <li>du täglich Video schneidest, in ProRes aufnimmst oder 3D renderst.</li>
           <li>ProMotion mit 120 Hz und echtes HDR deinen Arbeitsalltag prägen.</li>
-          <li>du lokale KI-Modelle nutzt und 12 GB Arbeitsspeicher brauchst.</li>
-          <li>du mit 60 W in unter 1½ Stunden wieder voll sein willst.</li>
+          <li>du regelmäßig lokale KI-Modelle rechnen lässt oder in 3D renderst.</li>
+          <li>dir Schnellladen wichtig ist: 50 % in einer halben Stunde statt in 1½.</li>
         </ul>
       </article>
     </div>
@@ -458,7 +481,7 @@
 <footer class="foot">
   <div class="wrap">
     <p class="foot__lead">iPad Air 11″ (2026) vs. iPad Pro 11″ (2025)</p>
-    <p class="foot__p">Unabhängiger Vergleich. Alle Lade- und Laufzeitwerte entstehen aus einem physikalischen Modell (Kapazität, Ladeleistung, Wandlerverluste, Ladeschluss-Taper, Display- und SoC-Leistungsaufnahme) und sind als Orientierung gedacht, nicht als Labormessung. Spezifikationen des iPad Air 11″ (2026) sind Prognosen auf Basis der M4-Generation. Apple, iPad, iPad Air und iPad Pro sind Marken von Apple Inc. Diese Seite steht in keiner Verbindung zu Apple Inc.</p>
+    <p class="foot__p">Unabhängiger Vergleich. Alle Lade- und Laufzeitwerte entstehen aus einem physikalischen Modell (Kapazität, Ladeleistung, Wandlerverluste, Ladeschluss-Taper, Display- und SoC-Leistungsaufnahme) und sind als Orientierung gedacht, nicht als Labormessung. Spezifikationen stammen aus den Herstellerangaben beider Geräte. Apple, iPad, iPad Air und iPad Pro sind Marken von Apple Inc. Diese Seite steht in keiner Verbindung zu Apple Inc.</p>
     <p class="foot__meta"><span>Stand: 2026</span><span>·</span><span>Alle Angaben ohne Gewähr</span></p>
   </div>
 </footer>

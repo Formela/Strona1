@@ -199,27 +199,41 @@ table{border-collapse:collapse;width:100%}
   will-change:transform;
 }
 
-/* Gerät-Rig */
+/* =====================================================================
+   Gerät — echtes 3D-Volumen
+   Aufbau: Vorderseite (Glas) + Rückseite (Aluminium) + umlaufender Rand.
+   Der Rand entsteht in JS aus vier geraden Kanten und je fünf Segmenten
+   pro Ecke, damit die Silhouette im Profil gerundet ist statt eckig.
+   ===================================================================== */
 .rig{
   position:relative;
   transform-style:preserve-3d;
   will-change:transform;
 }
-/* --dratio hält das echte Verhältnis 6,1 mm : 5,3 mm.
-   --dboost überhöht die Dicke, wenn das Gerät hochkant zum Betrachter steht. */
+/* --dratio ist das echte Verhältnis Dicke : Breite.
+   --dboost überhöht es nur im Profilmoment, damit 5,3 gegen 6,1 mm
+   überhaupt unterscheidbar wird; das Verhältnis bleibt exakt erhalten. */
 .rig[data-rig="air"]{
-  --w:clamp(124px,min(16vw,29vh),232px);
-  --h:calc(var(--w) * 1.387);
-  --dratio:0.0513;              /* 6,1 mm, für Sichtbarkeit x1,5 */
-  --alu1:#c9ccd2; --alu2:#8b9099; --alu3:#5f6570;
+  --w:clamp(136px,min(18vw,31vh),268px);
+  --h:calc(var(--w) * 1.3872);          /* 247,6 : 178,5 mm */
+  --dratio:0.03417;                     /* 6,1 : 178,5 mm */
+  --alu1:#dde6f2; --alu2:#a8b7c9; --alu3:#6b7a8d; --alu4:#3c4553;
+  --glass:#0b0d12;
 }
 .rig[data-rig="pro"]{
-  --w:clamp(124px,min(16vw,29vh),232px);
-  --h:calc(var(--w) * 1.407);
-  --dratio:0.0448;              /* 5,3 mm */
-  --alu1:#4a4a4f; --alu2:#2c2c30; --alu3:#171719;
+  --w:clamp(136px,min(18vw,31vh),268px);
+  --h:calc(var(--w) * 1.4068);          /* 249,7 : 177,5 mm */
+  --dratio:0.02986;                     /* 5,3 : 177,5 mm */
+  --alu1:#6b6d73; --alu2:#3c3e44; --alu3:#212327; --alu4:#0e0f11;
+  --glass:#000;
 }
-.rig{--dboost:1;--d:calc(var(--w) * var(--dratio) * var(--dboost))}
+.rig{
+  --dboost:1;
+  --d:calc(var(--w) * var(--dratio) * var(--dboost));
+  --r:calc(var(--w) * 0.085);           /* Eckradius */
+  --bez:calc(var(--w) * 0.048);         /* Displayrand */
+  --spec:0.5;                           /* Glanzposition, wird beim Drehen gesetzt */
+}
 
 .device{
   position:relative;
@@ -231,51 +245,45 @@ table{border-collapse:collapse;width:100%}
   backface-visibility:hidden;
   transform-origin:50% 50%;
 }
-.face--front,.face--back{
-  width:var(--w);height:var(--h);
-  border-radius:calc(var(--w) * .078);
-  overflow:hidden;
-}
-.face--front{
-  transform:translate(-50%,-50%) translateZ(calc(var(--d)/2));
-  background:#08080a;
-  box-shadow:0 0 0 1px rgba(255,255,255,.09) inset;
-}
-.face--back{
-  transform:translate(-50%,-50%) rotateY(180deg) translateZ(calc(var(--d)/2));
-  background:linear-gradient(148deg,var(--alu1) 0%,var(--alu2) 42%,var(--alu3) 100%);
-  box-shadow:0 0 0 1px rgba(255,255,255,.12) inset;
-}
-/* Kanten */
-.edge{background:linear-gradient(180deg,var(--alu1),var(--alu3))}
-.edge--l{
-  width:var(--d);height:var(--h);
-  transform:translate(-50%,-50%) rotateY(-90deg) translateZ(calc(var(--w)/2));
-}
-.edge--r{
-  width:var(--d);height:var(--h);
-  transform:translate(-50%,-50%) rotateY(90deg) translateZ(calc(var(--w)/2));
-}
-.edge--t{
-  width:var(--w);height:var(--d);
-  transform:translate(-50%,-50%) rotateX(90deg) translateZ(calc(var(--h)/2));
-  background:linear-gradient(90deg,var(--alu2),var(--alu1),var(--alu2));
-}
-.edge--b{
-  width:var(--w);height:var(--d);
-  transform:translate(-50%,-50%) rotateX(-90deg) translateZ(calc(var(--h)/2));
-  background:linear-gradient(90deg,var(--alu3),var(--alu2),var(--alu3));
-}
 
-/* Display */
+/* ---------- Vorderseite ---------- */
+.face--front{
+  width:var(--w);height:var(--h);
+  border-radius:var(--r);
+  transform:translate(-50%,-50%) translateZ(calc(var(--d)/2));
+  background:var(--glass);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.14) inset,
+    0 0 calc(var(--w)*.02) rgba(0,0,0,.9) inset;
+}
 .screen{
-  position:absolute;inset:calc(var(--w) * .036);
-  border-radius:calc(var(--w) * .05);
+  position:absolute;inset:var(--bez);
+  border-radius:calc(var(--r) - var(--bez));
   overflow:hidden;
   background:#000;
 }
-.screen--lcd{background:#08090c;box-shadow:0 0 0 1px rgba(255,255,255,.05) inset}
-.screen--oled{background:#000}
+/* Frontkamera sitzt an der Längsseite — im Hochformat also links mittig */
+.frontcam{
+  position:absolute;left:calc(var(--bez) * 0.44);top:50%;
+  width:calc(var(--w)*.016);height:calc(var(--w)*.016);
+  border-radius:50%;transform:translateY(-50%);
+  background:radial-gradient(circle at 35% 32%,#2b3444,#05070b 70%);
+  box-shadow:0 0 0 1px rgba(255,255,255,.07);
+}
+/* Spiegelung auf dem Deckglas — wandert mit der Drehung */
+.glass{
+  position:absolute;inset:0;border-radius:var(--r);pointer-events:none;
+  background:linear-gradient(
+    calc(102deg + var(--spec) * 26deg),
+    rgba(255,255,255,.30) 0%,
+    rgba(255,255,255,.10) calc(12% + var(--spec) * 14%),
+    rgba(255,255,255,0)   calc(34% + var(--spec) * 16%),
+    rgba(255,255,255,0)   72%,
+    rgba(255,255,255,.06) 100%);
+  mix-blend-mode:screen;
+}
+
+/* Displayinhalt */
 .wallpaper{position:absolute;inset:0}
 .wallpaper--air{
   background:
@@ -291,107 +299,186 @@ table{border-collapse:collapse;width:100%}
     linear-gradient(160deg,#1a0630,#0a0117 62%,#000);
   filter:saturate(1.25) contrast(1.08);
 }
+.screen__vignette{
+  position:absolute;inset:0;pointer-events:none;
+  box-shadow:inset 0 0 calc(var(--w)*.06) rgba(0,0,0,.45);
+}
 .screen__ui{
   position:absolute;inset:0;
   display:flex;flex-direction:column;
-  padding:calc(var(--w) * .055) calc(var(--w) * .06);
+  padding:calc(var(--w) * .05) calc(var(--w) * .055);
   color:#fff;
 }
 .ui-status{
   display:flex;justify-content:space-between;align-items:center;
-  font-size:calc(var(--w) * .042);font-weight:600;opacity:.9;letter-spacing:0;
+  font-size:calc(var(--w) * .038);font-weight:600;opacity:.9;letter-spacing:0;
 }
-.ui-dots{display:flex;gap:calc(var(--w)*.016)}
-.ui-dots i{width:calc(var(--w)*.022);height:calc(var(--w)*.022);border-radius:50%;background:rgba(255,255,255,.8)}
+.ui-dots{display:flex;gap:calc(var(--w)*.014)}
+.ui-dots i{width:calc(var(--w)*.02);height:calc(var(--w)*.02);border-radius:50%;background:rgba(255,255,255,.8)}
 .ui-hero{margin-top:auto;margin-bottom:auto}
 .ui-badge{
-  display:inline-block;font-size:calc(var(--w)*.036);font-weight:600;
-  padding:calc(var(--w)*.014) calc(var(--w)*.04);border-radius:100px;
-  background:rgba(255,255,255,.18);backdrop-filter:blur(6px);
-  letter-spacing:.04em;
+  display:inline-block;font-size:calc(var(--w)*.033);font-weight:600;
+  padding:calc(var(--w)*.013) calc(var(--w)*.038);border-radius:100px;
+  background:rgba(255,255,255,.18);backdrop-filter:blur(6px);letter-spacing:.04em;
 }
-.ui-title{font-size:calc(var(--w)*.20);font-weight:700;letter-spacing:-.05em;line-height:1;margin-top:calc(var(--w)*.05)}
-.ui-sub{font-size:calc(var(--w)*.038);opacity:.72;margin-top:calc(var(--w)*.02)}
+.ui-title{font-size:calc(var(--w)*.185);font-weight:700;letter-spacing:-.05em;line-height:1;margin-top:calc(var(--w)*.045)}
+.ui-sub{font-size:calc(var(--w)*.034);opacity:.72;margin-top:calc(var(--w)*.018)}
 .ui-dock{
-  display:flex;gap:calc(var(--w)*.03);justify-content:center;
-  padding:calc(var(--w)*.022);border-radius:calc(var(--w)*.05);
-  background:rgba(255,255,255,.14);backdrop-filter:blur(10px);
-  margin-inline:auto;
+  display:flex;gap:calc(var(--w)*.028);justify-content:center;
+  padding:calc(var(--w)*.02);border-radius:calc(var(--w)*.045);
+  background:rgba(255,255,255,.14);backdrop-filter:blur(10px);margin-inline:auto;
 }
 .ui-dock i{
-  width:calc(var(--w)*.085);height:calc(var(--w)*.085);
-  border-radius:calc(var(--w)*.022);
+  width:calc(var(--w)*.08);height:calc(var(--w)*.08);
+  border-radius:calc(var(--w)*.02);
   background:linear-gradient(160deg,rgba(255,255,255,.95),rgba(255,255,255,.55));
 }
-.screen__glare{
-  position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(112deg,rgba(255,255,255,.22) 0%,rgba(255,255,255,.05) 18%,transparent 42%);
-  mix-blend-mode:screen;
-}
 
-/* Rückseite */
-.cam{
-  position:absolute;top:calc(var(--w)*.055);left:calc(var(--w)*.055);
-  border-radius:calc(var(--w)*.055);
-  background:linear-gradient(150deg,rgba(255,255,255,.18),rgba(0,0,0,.28));
-  box-shadow:0 calc(var(--w)*.006) calc(var(--w)*.02) rgba(0,0,0,.35);
-  display:grid;gap:calc(var(--w)*.022);
+/* ---------- Rückseite ---------- */
+.face--back{
+  width:var(--w);height:var(--h);
+  border-radius:var(--r);
+  transform:translate(-50%,-50%) rotateY(180deg) translateZ(calc(var(--d)/2));
+  transform-style:preserve-3d;          /* trägt die erhabene Kamera */
+  background:linear-gradient(152deg,var(--alu1) 0%,var(--alu2) 38%,var(--alu3) 74%,var(--alu4) 100%);
+  box-shadow:0 0 0 1px rgba(255,255,255,.16) inset;
 }
-.cam--single{width:calc(var(--w)*.19);height:calc(var(--w)*.19);place-items:center}
-.cam--pro{
-  width:calc(var(--w)*.30);height:calc(var(--w)*.30);
-  padding:calc(var(--w)*.035);
-  grid-template-columns:1fr 1fr;align-items:center;justify-items:center;
-}
-.lens{
-  width:calc(var(--w)*.10);height:calc(var(--w)*.10);border-radius:50%;
-  background:radial-gradient(circle at 34% 30%,#5a6070,#0b0b0e 62%);
-  box-shadow:0 0 0 calc(var(--w)*.006) rgba(255,255,255,.22),
-             inset 0 0 calc(var(--w)*.012) rgba(120,180,255,.4);
-}
-.cam--pro .lens{grid-column:1;grid-row:1}
-.lidar{
-  width:calc(var(--w)*.055);height:calc(var(--w)*.055);border-radius:50%;
-  background:radial-gradient(circle at 40% 35%,#2a2f38,#08080a);
-  box-shadow:0 0 0 calc(var(--w)*.004) rgba(255,255,255,.16);
-  grid-column:2;grid-row:1;
-}
-.flash{
-  width:calc(var(--w)*.045);height:calc(var(--w)*.045);border-radius:50%;
-  background:radial-gradient(circle,#fff8e6,#c9a94f);
-  grid-column:1/3;grid-row:2;justify-self:center;
-  box-shadow:0 0 calc(var(--w)*.02) rgba(255,235,180,.5);
+.alu-sheen{
+  position:absolute;inset:0;border-radius:var(--r);pointer-events:none;
+  background:linear-gradient(
+    calc(118deg - var(--spec) * 30deg),
+    rgba(255,255,255,0)    18%,
+    rgba(255,255,255,.13)  calc(36% + var(--spec) * 10%),
+    rgba(255,255,255,.03)  calc(52% + var(--spec) * 10%),
+    rgba(0,0,0,.16)        100%);
 }
 .blogo{
   position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
-  width:calc(var(--w)*.20);height:calc(var(--w)*.20);
-  fill:rgba(255,255,255,.55);
-  filter:drop-shadow(0 1px 1px rgba(0,0,0,.25));
+  width:calc(var(--w)*.185);height:calc(var(--w)*.185);
 }
-.back--air .blogo{fill:rgba(255,255,255,.72)}
-.back--pro .blogo{fill:rgba(255,255,255,.42)}
+.back--air .blogo{fill:rgba(255,255,255,.78);filter:drop-shadow(0 1px 1px rgba(0,0,0,.22))}
+.back--pro .blogo{fill:rgba(235,238,245,.5);filter:drop-shadow(0 1px 1px rgba(0,0,0,.5))}
 .antenna{
-  position:absolute;left:0;right:0;bottom:calc(var(--h)*.14);height:2px;
-  background:rgba(255,255,255,.14);
+  position:absolute;left:0;right:0;bottom:calc(var(--h)*.135);height:1px;
+  background:rgba(255,255,255,.09);
 }
 
-/* Schatten + Label */
+/* Erhabene Kamera — echtes Volumen, kein aufgemalter Kreis */
+.bump{
+  --bh:calc(var(--w) * 0.012);          /* Höhe des Kamerahügels */
+  position:absolute;
+  top:calc(var(--w)*.058);left:calc(var(--w)*.058);
+  width:var(--bs);height:var(--bs);
+  transform-style:preserve-3d;
+}
+.bump--air{--bs:calc(var(--w) * 0.148)}
+.bump--pro{--bs:calc(var(--w) * 0.235)}
+.bump-top,.bump-wall{position:absolute;left:50%;top:50%;transform-origin:50% 50%}
+.bump-top{
+  width:var(--bs);height:var(--bs);
+  border-radius:calc(var(--bs) * 0.30);
+  transform:translate(-50%,-50%) translateZ(var(--bh));
+  background:linear-gradient(150deg,var(--alu1),var(--alu2) 55%,var(--alu3));
+  box-shadow:0 0 0 1px rgba(255,255,255,.2) inset;
+  display:grid;place-items:center;
+  padding:calc(var(--bs)*.13);
+}
+.bump-wall{background:linear-gradient(var(--alu3),var(--alu4))}
+.bw-t{width:var(--bs);height:var(--bh);transform:translate(-50%,-50%) translateY(calc(var(--bs)/-2)) translateZ(calc(var(--bh)/2)) rotateX(90deg);background:linear-gradient(var(--alu1),var(--alu2))}
+.bw-b{width:var(--bs);height:var(--bh);transform:translate(-50%,-50%) translateY(calc(var(--bs)/2))  translateZ(calc(var(--bh)/2)) rotateX(90deg);background:linear-gradient(var(--alu4),var(--alu3))}
+.bw-l{width:var(--bh);height:var(--bs);transform:translate(-50%,-50%) translateX(calc(var(--bs)/-2)) translateZ(calc(var(--bh)/2)) rotateY(90deg);background:linear-gradient(90deg,var(--alu2),var(--alu3))}
+.bw-r{width:var(--bh);height:var(--bs);transform:translate(-50%,-50%) translateX(calc(var(--bs)/2))  translateZ(calc(var(--bh)/2)) rotateY(90deg);background:linear-gradient(90deg,var(--alu3),var(--alu4))}
+
+.bump--air .bump-top{grid-template-columns:1fr}
+.bump--pro .bump-top{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:calc(var(--bs)*.06)}
+.lens{
+  width:calc(var(--bs)*.46);height:calc(var(--bs)*.46);border-radius:50%;
+  background:
+    radial-gradient(circle at 36% 30%,rgba(255,255,255,.5),transparent 42%),
+    radial-gradient(circle at 50% 50%,#1c2130 28%,#05060a 62%);
+  box-shadow:0 0 0 calc(var(--bs)*.045) rgba(20,22,28,.9),
+             0 0 0 calc(var(--bs)*.06) rgba(255,255,255,.18),
+             inset 0 0 calc(var(--bs)*.07) rgba(110,170,255,.45);
+}
+.bump--air .lens{width:calc(var(--bs)*.52);height:calc(var(--bs)*.52)}
+.lidar{
+  width:calc(var(--bs)*.26);height:calc(var(--bs)*.26);border-radius:50%;
+  background:radial-gradient(circle at 40% 35%,#2e343f,#06070a);
+  box-shadow:0 0 0 calc(var(--bs)*.035) rgba(255,255,255,.14);
+}
+.flash{
+  width:calc(var(--bs)*.2);height:calc(var(--bs)*.2);border-radius:50%;
+  grid-column:1/3;justify-self:center;
+  background:radial-gradient(circle,#fff6e2,#c8a44a 70%);
+  box-shadow:0 0 calc(var(--bs)*.14) rgba(255,232,170,.5);
+}
+
+/* ---------- Umlaufender Rand (in JS erzeugt) ---------- */
+.rim-seg{
+  position:absolute;left:50%;top:50%;
+  transform-origin:50% 50%;
+  backface-visibility:hidden;
+}
+/* Tasten, Anschluss und Lautsprecher sitzen auf den geraden Kanten */
+.rim-detail{position:absolute;border-radius:99px}
+.btn-power{
+  top:50%;transform:translateY(-50%);
+  left:66%;width:calc(var(--w)*.105);height:56%;
+  background:linear-gradient(var(--alu2),var(--alu4));
+  box-shadow:0 0 0 1px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.22);
+}
+.btn-vol{
+  left:50%;transform:translateX(-50%);
+  width:56%;height:calc(var(--w)*.075);
+  background:linear-gradient(90deg,var(--alu2),var(--alu4));
+  box-shadow:0 0 0 1px rgba(0,0,0,.28), inset 1px 0 0 rgba(255,255,255,.22);
+}
+.btn-vol--a{top:9%}
+.btn-vol--b{top:calc(9% + var(--w)*.105)}
+.port{
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  width:calc(var(--w)*.072);height:46%;
+  background:#0b0c0e;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.14);
+}
+.grille{
+  top:50%;transform:translateY(-50%);height:26%;
+  background-image:radial-gradient(circle,rgba(0,0,0,.62) 44%,transparent 46%);
+  background-size:calc(var(--w)*.022) 100%;
+  opacity:.85;border-radius:0;
+}
+.grille--l{left:14%;width:16%}
+.grille--r{right:14%;width:16%}
+.pencil{
+  top:50%;left:22%;transform:translateY(-50%);
+  width:56%;height:34%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.10),transparent);
+}
+
+/* ---------- Schatten, Labels ---------- */
 .rig__shadow{
-  position:absolute;left:50%;bottom:calc(var(--h) * -.10);
-  width:calc(var(--w)*1.05);height:calc(var(--w)*.22);
+  position:absolute;left:50%;bottom:calc(var(--h) * -.09);
+  width:calc(var(--w)*1.02);height:calc(var(--w)*.2);
   transform:translateX(-50%) translateZ(-40px);
-  background:radial-gradient(ellipse at center,rgba(0,0,0,.75),transparent 70%);
-  filter:blur(10px);
+  background:radial-gradient(ellipse at center,rgba(0,0,0,.8),transparent 70%);
+  filter:blur(12px);
 }
-.rig__tag{
+.rig__tag,.rig__mm{
   position:absolute;left:50%;transform:translateX(-50%);
-  bottom:calc(var(--h) * -.20);
+  bottom:calc(var(--h) * -.19);
   text-align:center;white-space:nowrap;
-  opacity:0;transition:opacity .5s var(--ease);
+  opacity:0;transition:opacity .45s var(--ease);
 }
-.rig__tag b{display:block;font-size:14px;font-weight:600;letter-spacing:-.01em}
-.rig__tag span{display:block;font-size:12px;color:var(--tx-3);margin-top:2px}
+.rig__tag b,.rig__mm b{display:block;font-size:14px;font-weight:600;letter-spacing:-.01em}
+.rig__tag span,.rig__mm span{display:block;font-size:12px;color:var(--tx-3);margin-top:2px}
+.rig__mm b{
+  font-size:19px;font-variant-numeric:tabular-nums;
+  background-image:linear-gradient(100deg,#fff,#cfd4dd);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.rig__mm span{font-size:11px;letter-spacing:.1em;text-transform:uppercase}
 .stage.show-tags .rig__tag{opacity:1}
+.stage.show-mm  .rig__mm{opacity:1}
 
 .hero__hint{
   position:absolute;bottom:28px;left:50%;transform:translateX(-50%);
@@ -876,4 +963,65 @@ table{border-collapse:collapse;width:100%}
   /* Ohne Drehung braucht die Bühne keine 420vh Scrollstrecke mehr */
   .hero__track{height:100svh}
   .hero__hint{display:none}
+}
+
+/* =====================================================================
+   SCROLL-EFFEKTE
+   ===================================================================== */
+
+/* Vergleichsleiste — schwebt nach dem Hero unter die Navigation */
+.compbar{
+  position:fixed;top:64px;left:0;right:0;z-index:90;
+  display:flex;justify-content:center;pointer-events:none;
+  opacity:0;transform:translateY(-14px) scale(.96);
+  transition:opacity .5s var(--ease),transform .5s var(--ease);
+}
+.compbar.is-on{opacity:1;transform:none}
+.compbar__in{
+  display:flex;align-items:center;gap:clamp(12px,2vw,22px);
+  background:rgba(14,14,17,.84);
+  backdrop-filter:saturate(180%) blur(20px);
+  -webkit-backdrop-filter:saturate(180%) blur(20px);
+  border:1px solid var(--line);border-radius:100px;
+  padding:8px clamp(14px,2vw,22px);
+  box-shadow:0 10px 34px rgba(0,0,0,.55);
+}
+.compbar__dev{display:flex;align-items:center;gap:8px;font-size:12.5px;white-space:nowrap}
+.compbar__dev b{font-weight:560}
+.compbar__dev span{color:var(--tx-3);font-variant-numeric:tabular-nums}
+.compbar__vs{font-size:11px;color:var(--tx-3);letter-spacing:.1em;text-transform:uppercase}
+@media (max-width:640px){
+  .compbar{top:60px}
+  .compbar__dev span{display:none}
+}
+
+/* Parallaxe der Kapitelköpfe */
+[data-par]{will-change:transform}
+
+/* Gestaffeltes Einlaufen von Tabellenzeilen */
+@keyframes rowIn{
+  from{opacity:0;transform:translateY(14px)}
+  to  {opacity:1;transform:none}
+}
+.difftable.is-in .diffrow,
+.tablewrap.is-in .tbl tbody tr{
+  animation:rowIn .5s var(--ease) both;
+  animation-delay:calc(var(--i,0) * 26ms);
+}
+
+/* Diagrammlinien zeichnen sich beim Hereinscrollen */
+.ch-line.draw{stroke-dasharray:var(--len);stroke-dashoffset:var(--len)}
+.ch-line.draw.is-drawn{
+  stroke-dashoffset:0;
+  transition:stroke-dashoffset 1.5s cubic-bezier(.33,.9,.35,1);
+}
+
+/* Balken und Anzeigen starten leer und wachsen beim Erreichen */
+.bar__fill,.meter i{will-change:width}
+
+@media (prefers-reduced-motion:reduce){
+  .compbar{transition:none}
+  .difftable.is-in .diffrow,
+  .tablewrap.is-in .tbl tbody tr{animation:none}
+  .ch-line.draw{stroke-dasharray:none;stroke-dashoffset:0}
 }
